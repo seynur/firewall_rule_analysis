@@ -1,0 +1,93 @@
+<form theme="dark">
+  <label>FW Rule Optimizer  - TOP and RARE Events</label>
+  <description>This dashboard allows users to monitor firewall rule hits by intended fields, numbers, and time range.</description>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="time" token="time_range" searchWhenChanged="false">
+      <label>Time Range</label>
+      <default>
+        <earliest>0</earliest>
+        <latest></latest>
+      </default>
+    </input>
+    <input type="checkbox" token="hitbase" searchWhenChanged="false">
+      <label>Base Fields</label>
+      <choice value="All_Traffic.app">Application</choice>
+      <choice value="All_Traffic.src">Source</choice>
+      <choice value="All_Traffic.dest">Destination</choice>
+      <choice value="All_Traffic.transport">Protocol</choice>
+      <choice value="All_Traffic.dest_port">Port</choice>
+      <default>All_Traffic.app,All_Traffic.src,All_Traffic.dest,All_Traffic.transport,All_Traffic.dest_port</default>
+      <delimiter> </delimiter>
+    </input>
+    <input type="text" token="n_rule">
+      <label>Number of Rules</label>
+      <default>10</default>
+    </input>
+  </fieldset>
+
+  <search id="init_traffic_count">
+    <query>| tstats count as Hit from datamodel=Network_Traffic by All_Traffic.rule, $hitbase$ | rename All_Traffic.app as Application, All_Traffic.src as Source, All_Traffic.dest as Destination, All_Traffic.transport as Protocol, All_Traffic.dest_port as Port, All_Traffic.rule as "Rule Name"</query>
+    <earliest>$time_range.earliest$</earliest>
+    <latest>$time_range.latest$</latest>
+    <sampleRatio>1</sampleRatio>
+  </search>
+
+  <row>
+    <panel>
+      <title>The Most Frequent Rules</title>
+      <html>TOP $n_rule$ Rules</html>
+      <table>
+        <search base="init_traffic_count">
+          <query>| sort $n_rule$ - Hit </query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+        <format type="color" field="Total">
+          <colorPalette type="minMidMax" maxColor="#00660C" midColor="#53A051" minColor="#B6C75A"></colorPalette>
+          <scale type="minMidMax" midType="percent" midValue="50"></scale>
+        </format>
+        <format type="color" field="Hit">
+          <colorPalette type="minMidMax" maxColor="#00660C" midColor="#53A051" minColor="#B6C75A"></colorPalette>
+          <scale type="minMidMax" midType="percentile" midValue="50"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>The Least Frequent Rules</title>
+      <html>RARE $n_rule$ Rules</html>
+      <table>
+        <search base="init_traffic_count">
+          <query>| sort $n_rule$ + Hit </query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Total">
+          <colorPalette type="minMidMax" maxColor="#F8BE34" midColor="#F1813F" minColor="#DC4E41"></colorPalette>
+          <scale type="minMidMax" midType="percent" midValue="50"></scale>
+        </format>
+        <format type="color" field="Hit">
+          <colorPalette type="minMidMax" maxColor="#F8BE34" midColor="#F1813F" minColor="#DC4E41"></colorPalette>
+          <scale type="minMidMax" midType="percentile" midValue="50"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>
