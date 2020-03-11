@@ -1,5 +1,5 @@
 <form theme="dark">
-  <label>FW Rule Optimizer  - TOP and RARE Events</label>
+  <label>FW Rule Analysis  - TOP and RARE Events</label>
   <description>This dashboard allows users to monitor firewall rule hits by intended fields, numbers, and time range.</description>
   <fieldset submitButton="true" autoRun="false">
     <input type="time" token="time_range" searchWhenChanged="false">
